@@ -24,6 +24,7 @@ const insightLimiter = rateLimit({
   message: { error: "Límite horario de análisis alcanzado. Intenta más tarde." },
 });
 
+app.set("trust proxy", 1);
 app.use(cors());
 app.use(express.json());
 
