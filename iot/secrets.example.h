@@ -1,0 +1,3 @@
+#pragma once
+
+#define IOT_INGEST_TOKEN "REEMPLAZA_CON_TU_TOKEN_DE_RENDER"

@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "author": "Llama en caída libre",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "tempPot",
+      "top": -82,
+      "left": 265,
+      "attrs": { "value": "180" }
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "smokePot",
+      "top": 48,
+      "left": 265,
+      "attrs": { "value": "120" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "flameButton",
+      "top": 190,
+      "left": 282,
+      "attrs": { "color": "red", "label": "Simular llama", "key": "F", "bounce": "0" }
+    }
+  ],
+  "connections": [
+    ["tempPot:VCC", "esp:3V3", "red", []],
+    ["tempPot:GND", "esp:GND.1", "black", []],
+    ["tempPot:SIG", "esp:34", "green", []],
+    ["smokePot:VCC", "esp:3V3", "red", []],
+    ["smokePot:GND", "esp:GND.1", "black", []],
+    ["smokePot:SIG", "esp:35", "blue", []],
+    ["flameButton:1.l", "esp:18", "orange", []],
+    ["flameButton:2.l", "esp:GND.2", "black", []]
+  ],
+  "dependencies": {}
+}

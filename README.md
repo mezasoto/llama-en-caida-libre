@@ -36,3 +36,16 @@ Despliega dos servicios desde este repositorio:
 - Frontend, tipo **Static Site**, Root Directory `frontend`, Build Command `npm install && npm run build`, Publish Directory `dist`. Configura `VITE_API_URL` con la URL pública del backend y vuelve a desplegar el frontend tras cambiarla.
 
 Nunca subas archivos `.env` ni copies la clave secreta de Supabase a Wokwi, al frontend o al repositorio.
+
+## Simulador Wokwi (ESP32)
+
+El proyecto de firmware está en `iot/`. Sus potenciómetros y botón generan **entradas ilustrativas**, no mediciones de sensores físicos. Cada 10 segundos el ESP32 simulado envía una lectura por HTTPS a Render; el backend la valida y la guarda en Supabase.
+
+1. Instala la extensión **PlatformIO IDE** en VS Code si todavía no está instalada.
+2. En una ventana de VS Code, abre la carpeta `iot` como proyecto.
+3. Copia `secrets.example.h` a `secrets.h` y reemplaza el texto de ejemplo por el mismo `IOT_INGEST_TOKEN` configurado en Render. `iot/secrets.h` está ignorado por Git.
+4. Compila el entorno `esp32dev` desde PlatformIO (`PlatformIO: Build` o `pio run`). Wokwi necesita el firmware compilado antes de iniciar.
+5. Ejecuta **Wokwi: Start Simulator** desde la paleta de comandos. La extensión usa `diagram.json` y `wokwi.toml` de la carpeta `iot`.
+6. Mueve el potenciómetro de temperatura o humo y presiona el botón rojo para simular una llama. El monitor serial muestra el código HTTP; `201` indica que la lectura se guardó. Revisa `/api/telemetry` o la tabla `public.telemetry` en Supabase.
+
+El ejemplo usa `setInsecure()` para simplificar HTTPS durante la simulación. No uses esta configuración en hardware real sin reemplazarla por validación del certificado TLS. El token se incluye en el firmware, así que usa este ejemplo solo con el token de demostración y no publiques `secrets.h`.

@@ -5,3 +5,4 @@
 !**/.env.example
 **/*.tsbuildinfo
 .DS_Store
+iot/secrets.h
