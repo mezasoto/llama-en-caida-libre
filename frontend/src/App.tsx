@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Activity,
   ArrowDownUp,
@@ -32,6 +32,19 @@ type Experiment = {
   ignitionDelay: number
   burnTime: number
 }
+
+type TelemetryRecord = {
+  id: number
+  device_id: string
+  temperature_c: number
+  smoke_ppm: number
+  flame_detected: boolean
+  created_at: string
+}
+
+type TelemetryStatus = 'loading' | 'online' | 'empty' | 'offline'
+
+const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/$/, '')
 
 const experiments: Experiment[] = [
   {
@@ -67,6 +80,37 @@ function App() {
   const [query, setQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState('Todos')
   const [selectedIds, setSelectedIds] = useState(['DEMO-01', 'DEMO-02'])
+  const [telemetry, setTelemetry] = useState<TelemetryRecord[]>([])
+  const [telemetryStatus, setTelemetryStatus] = useState<TelemetryStatus>('loading')
+
+  useEffect(() => {
+    let isCurrent = true
+
+    const loadTelemetry = async () => {
+      try {
+        const response = await fetch(`${apiBaseUrl}/api/telemetry`)
+        if (!response.ok) throw new Error('Telemetry API request failed')
+
+        const result = (await response.json()) as { data?: TelemetryRecord[] }
+        if (!Array.isArray(result.data)) throw new Error('Unexpected telemetry response')
+
+        if (isCurrent) {
+          setTelemetry(result.data)
+          setTelemetryStatus(result.data.length > 0 ? 'online' : 'empty')
+        }
+      } catch {
+        if (isCurrent) setTelemetryStatus('offline')
+      }
+    }
+
+    void loadTelemetry()
+    const intervalId = window.setInterval(() => void loadTelemetry(), 10000)
+
+    return () => {
+      isCurrent = false
+      window.clearInterval(intervalId)
+    }
+  }, [])
 
   const filteredExperiments = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -164,8 +208,8 @@ function App() {
             </article>
             <article className="metric-card">
               <div className="metric-top"><span>TELEMETRÍA</span><Radio size={16} /></div>
-              <div className="metric-value metric-demo">DEMO</div>
-              <div className="metric-foot"><span className="pulse-dot" /> Sin sensor conectado</div>
+              <div className="metric-value">{telemetry.length.toString().padStart(2, '0')}</div>
+              <div className="metric-foot"><span className={`pulse-dot pulse-${telemetryStatus}`} /> {telemetryStatus === 'online' ? 'Lecturas recibidas' : telemetryStatus === 'empty' ? 'API conectada · sin lecturas' : telemetryStatus === 'loading' ? 'Conectando API...' : 'API sin conexión'}</div>
             </article>
             <article className="metric-card metric-card-accent">
               <div className="metric-top"><span>ANÁLISIS IA</span><Sparkles size={16} /></div>
@@ -221,6 +265,42 @@ function App() {
             </article>
           </section>
 
+          <section className="panel telemetry-panel" id="telemetria">
+            <div className="experiment-heading telemetry-heading">
+              <div>
+                <div className="section-kicker">LECTURAS DEL ESP32</div>
+                <h2>Telemetría reciente <span className="count-pill">{telemetry.length}</span></h2>
+              </div>
+              <span className={`connection-tag connection-${telemetryStatus}`}><span />{telemetryStatus === 'online' ? 'API conectada' : telemetryStatus === 'empty' ? 'Esperando primera lectura' : telemetryStatus === 'loading' ? 'Conectando...' : 'Sin conexión'}</span>
+            </div>
+            {telemetry.length > 0 ? (
+              <div className="table-scroll telemetry-scroll">
+                <table>
+                  <thead><tr><th>DISPOSITIVO</th><th>TEMPERATURA</th><th>HUMO</th><th>LLAMA</th><th>RECIBIDO</th></tr></thead>
+                  <tbody>
+                    {telemetry.slice(0, 8).map((reading) => (
+                      <tr key={reading.id}>
+                        <td><span className="record-name">{reading.device_id}</span></td>
+                        <td><span className="table-value">{reading.temperature_c.toFixed(1)} <small>°C</small></span></td>
+                        <td><span className="table-value">{reading.smoke_ppm.toFixed(0)} <small>ppm</small></span></td>
+                        <td><span className={`flame-state ${reading.flame_detected ? 'flame-detected' : 'flame-clear'}`}>{reading.flame_detected ? 'Detectada' : 'No detectada'}</span></td>
+                        <td>{new Date(reading.created_at).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="telemetry-empty" aria-live="polite">
+                {telemetryStatus === 'offline'
+                  ? 'No se pudo conectar con la API. Revisa VITE_API_URL y que el backend esté activo.'
+                  : telemetryStatus === 'loading'
+                    ? 'Consultando la API...'
+                    : 'La API responde, pero aún no ha recibido lecturas del ESP32.'}
+              </div>
+            )}
+          </section>
+
           <section className="panel experiment-panel" id="experimentos">
             <div className="experiment-heading">
               <div>
@@ -259,7 +339,7 @@ function App() {
             <div className="table-footer"><span><span className="selection-dot" /> {selectedExperiments.length} seleccionados para comparar</span><span>Todos los valores son ficticios <ArrowUpRight size={14} /></span></div>
           </section>
 
-          <footer className="page-footer" id="telemetria"><span>LLAMALAB <i>·</i> PROTOTIPO DE INVESTIGACIÓN</span><span>Datos simulados <i>·</i> No apto para uso operativo</span></footer>
+          <footer className="page-footer"><span>LLAMALAB <i>·</i> PROTOTIPO DE INVESTIGACIÓN</span><span>Datos simulados <i>·</i> No apto para uso operativo</span></footer>
         </div>
       </main>
     </div>
