@@ -405,7 +405,7 @@ function App() {
               <button type="submit" disabled={assistantStatus === 'loading' || !question.trim()}><Send size={15} />{assistantStatus === 'loading' ? 'Analizando…' : 'Analizar'}</button>
             </form>
               {answer && <div className="assistant-answer" aria-live="polite"><Sparkles size={15} /><div><p>{answer.text}</p>{answer.sources.length > 0 && <div className="assistant-citations">Fuentes: {answer.sources.map((source) => <a href={source} target="_blank" rel="noreferrer" key={source}>NASA NTRS <ExternalLink size={11} /></a>)}</div>}</div></div>}
-            {assistantError && <div className="assistant-error" role="status"><CircleAlert size={15} /><span>{assistantError}{assistantError.toLowerCase().includes('no está configurado') ? ' Revisa OPENAI_API_KEY en el Web Service del backend.' : ' La clave aparece configurada; revisa el último error de OpenAI en los logs del Web Service.'}</span></div>}
+            {assistantError && <div className="assistant-error" role="status"><CircleAlert size={15} /><span>{assistantError}{assistantError.toLowerCase().includes('no está configurado') ? ' Revisa GEMINI_API_KEY en el Web Service del backend.' : ' Revisa el error más reciente de Gemini en los logs del Web Service.'}</span></div>}
             <div className="assistant-scope">La IA recibe gravedad, oxígeno, lecturas simuladas recientes y los dos informes citados. No emite recomendaciones operativas ni sustituye validación de ingeniería.</div>
           </section>
 

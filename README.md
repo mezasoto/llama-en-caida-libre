@@ -17,7 +17,9 @@ En el proyecto de Supabase abre **SQL Editor → New query** y ejecuta [`supabas
 
 `GET /api/nasa/search?q=FLEX%20microgravity` busca hasta 10 registros en el catálogo público NASA NTRS y devuelve sus metadatos, abstracts y enlaces. `POST /api/insights` combina una pregunta, los controles del escenario, las últimas lecturas simuladas y el contexto de dos informes NTRS. El modelo visual Three.js es cualitativo y no es CFD ni está validado para predicción de incendios.
 
-`POST /api/insights` genera una síntesis acotada a dos referencias NASA NTRS, los controles actuales de la escena y las últimas lecturas Wokwi. Configura `OPENAI_API_KEY` en el backend para activarla; `OPENAI_MODEL` es opcional. La clave nunca se envía al navegador. El asistente debe diferenciar datos publicados, modelo conceptual y telemetría simulada; sus respuestas no son recomendaciones operativas.
+`POST /api/insights` genera una síntesis acotada a dos referencias NASA NTRS, los controles actuales de la escena y las últimas lecturas Wokwi. Usa Gemini Developer API con el modelo por defecto `gemini-2.5-flash`. Configura `GEMINI_API_KEY` en el backend para activarla; `GEMINI_MODEL` es opcional. Una lista permitida en el servidor rechaza preguntas que no mencionen combustión/microgravedad, seguridad contra incendios espaciales, fuentes NASA FLEX/NTRS o telemetría Wokwi. La clave nunca se envía al navegador. El asistente debe diferenciar datos publicados, modelo conceptual y telemetría simulada; sus respuestas no son recomendaciones operativas.
+
+El nivel gratuito de Gemini está sujeto a cuotas que Google puede cambiar, y su política indica que el contenido puede usarse para mejorar productos. No envíes datos personales, secretos de misión ni información sensible al asistente.
 
 Ejemplo del cuerpo de ingesta:
 
@@ -36,7 +38,7 @@ El frontend actualiza la telemetría cada 10 segundos. `VITE_API_URL` debe apunt
 
 Despliega dos servicios desde este repositorio:
 
-- Backend, tipo **Web Service**, Root Directory `backend`, Build Command `npm install && npm run build`, Start Command `npm start`. Configura `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `IOT_INGEST_TOKEN` y, para habilitar el asistente, `OPENAI_API_KEY` en **Environment**. `OPENAI_MODEL` puede establecerse para elegir un modelo compatible.
+- Backend, tipo **Web Service**, Root Directory `backend`, Build Command `npm install && npm run build`, Start Command `npm start`. Configura `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `IOT_INGEST_TOKEN` y, para habilitar el asistente gratuito, `GEMINI_API_KEY` en **Environment**. `GEMINI_MODEL` puede establecerse para elegir otro modelo disponible en tu cuota.
 - Frontend, tipo **Static Site**, Root Directory `frontend`, Build Command `npm install && npm run build`, Publish Directory `dist`. Configura `VITE_API_URL` con la URL pública del backend y vuelve a desplegar el frontend tras cambiarla.
 
 Nunca subas archivos `.env` ni copies la clave secreta de Supabase a Wokwi, al frontend o al repositorio.
