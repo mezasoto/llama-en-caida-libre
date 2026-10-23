@@ -1,6 +1,6 @@
 # Llama en caída libre
 
-Panel de demostración para explorar seguridad contra incendios en microgravedad. La biblioteca de experimentos incluida en el frontend es ilustrativa; las lecturas de telemetría se consultan desde Supabase a través del backend.
+Dashboard interactivo para explorar seguridad contra incendios en microgravedad. Las referencias NASA se consultan en NASA NTRS; la telemetría del ESP32/Wokwi se consulta desde Supabase a través del backend.
 
 ## Supabase
 
@@ -14,6 +14,10 @@ En el proyecto de Supabase abre **SQL Editor → New query** y ejecuta [`supabas
 4. En otra terminal ejecuta `cd frontend`, `npm install` y `npm run dev`.
 
 `GET /api/health` comprueba el backend y muestra si Supabase está configurado. `GET /api/telemetry` devuelve hasta 100 lecturas recientes. `POST /api/telemetry` inserta una lectura y requiere el encabezado `x-ingest-token`.
+
+`GET /api/nasa/search?q=FLEX%20microgravity` busca hasta 10 registros en el catálogo público NASA NTRS y devuelve sus metadatos, abstracts y enlaces. `POST /api/insights` combina una pregunta, los controles del escenario, las últimas lecturas simuladas y el contexto de dos informes NTRS. El modelo visual Three.js es cualitativo y no es CFD ni está validado para predicción de incendios.
+
+`POST /api/insights` genera una síntesis acotada a dos referencias NASA NTRS, los controles actuales de la escena y las últimas lecturas Wokwi. Configura `OPENAI_API_KEY` en el backend para activarla; `OPENAI_MODEL` es opcional. La clave nunca se envía al navegador. El asistente debe diferenciar datos publicados, modelo conceptual y telemetría simulada; sus respuestas no son recomendaciones operativas.
 
 Ejemplo del cuerpo de ingesta:
 
@@ -32,7 +36,7 @@ El frontend actualiza la telemetría cada 10 segundos. `VITE_API_URL` debe apunt
 
 Despliega dos servicios desde este repositorio:
 
-- Backend, tipo **Web Service**, Root Directory `backend`, Build Command `npm install && npm run build`, Start Command `npm start`. Configura `SUPABASE_URL`, `SUPABASE_SECRET_KEY` e `IOT_INGEST_TOKEN` en **Environment**.
+- Backend, tipo **Web Service**, Root Directory `backend`, Build Command `npm install && npm run build`, Start Command `npm start`. Configura `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `IOT_INGEST_TOKEN` y, para habilitar el asistente, `OPENAI_API_KEY` en **Environment**. `OPENAI_MODEL` puede establecerse para elegir un modelo compatible.
 - Frontend, tipo **Static Site**, Root Directory `frontend`, Build Command `npm install && npm run build`, Publish Directory `dist`. Configura `VITE_API_URL` con la URL pública del backend y vuelve a desplegar el frontend tras cambiarla.
 
 Nunca subas archivos `.env` ni copies la clave secreta de Supabase a Wokwi, al frontend o al repositorio.
