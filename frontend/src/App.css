@@ -1337,6 +1337,108 @@ tbody tr:nth-child(3) .type-label {
 .experiment-pill { padding: 6px 8px; color: #536454; border: 1px solid #d8e2d5; border-radius: 3px; background: #f8fbf7; font-size: 8px; font-weight: 600; }
 .experiment-pill small { margin-left: 4px; color: #92998f; font-family: var(--mono); font-size: 7px; font-weight: 400; }
 
+.nasa-resources {
+  margin-bottom: 14px;
+  padding: 17px 18px 18px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #fff;
+}
+
+.resources-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 13px;
+}
+
+.resources-heading h2 {
+  margin: 5px 0 0;
+  color: #363c34;
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.resources-note {
+  color: #8a9188;
+  font-family: var(--mono);
+  font-size: 8px;
+}
+
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.resource-card {
+  position: relative;
+  display: flex;
+  min-height: 142px;
+  flex-direction: column;
+  padding: 13px 14px 11px;
+  color: inherit;
+  border: 1px solid #e5e7e0;
+  border-radius: 4px;
+  background: #fbfcf9;
+  text-decoration: none;
+  transition: border-color .18s ease, transform .18s ease, box-shadow .18s ease;
+}
+
+.resource-card:hover {
+  border-color: #b7c8b5;
+  box-shadow: 0 5px 16px rgb(63 78 64 / 8%);
+  transform: translateY(-2px);
+}
+
+.resource-number {
+  position: absolute;
+  top: 12px;
+  right: 13px;
+  color: #c9cec4;
+  font-family: var(--display);
+  font-size: 20px;
+}
+
+.resource-label {
+  color: #839080;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: .55px;
+}
+
+.resource-card strong {
+  max-width: 85%;
+  margin-top: 9px;
+  color: #435046;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.resource-card p {
+  margin: 7px 0 10px;
+  color: #788078;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.resource-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+  color: #c16e4b;
+  font-family: var(--mono);
+  font-size: 8px;
+}
+
+@media (max-width: 760px) {
+  .resources-heading { align-items: start; flex-direction: column; }
+  .resource-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 760px) {
   .mission-intelligence-heading { align-items: start; flex-direction: column; }
   .mission-grid { grid-template-columns: 1fr; }

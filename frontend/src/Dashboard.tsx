@@ -79,6 +79,27 @@ const initialNasaReferences: NasaReference[] = [
   },
 ]
 
+const nasaResourceLinks = [
+  {
+    title: 'Repositorio PSI · Ciencia de la combustión',
+    label: 'DATOS PRIMARIOS',
+    description: 'Catálogo de investigaciones y resultados experimentales que alimenta la búsqueda científica del panel.',
+    href: 'https://psi.nasa.gov/physci/repo/search?q=combustion',
+  },
+  {
+    title: 'Ciencia de la combustión de NASA',
+    label: 'CONTEXTO CIENTÍFICO',
+    description: 'Explica por qué la gravedad, el oxígeno y el flujo de aire cambian la prevención de incendios espaciales.',
+    href: 'https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/',
+  },
+  {
+    title: 'Guía para investigadores de combustión en la ISS',
+    label: 'MAPA DE EXPERIMENTOS',
+    description: 'Conecta proyectos, hardware y objetivos de investigación realizados o planificados en la estación espacial.',
+    href: 'https://www.nasa.gov/missions/station/a-researchers-guide-to-combustion-science/',
+  },
+]
+
 const formatClock = (value: string) =>
   new Date(value).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
 
@@ -320,6 +341,27 @@ function App() {
               <span className="experiment-pill">SAME-R / DAFT <small>humo y polvo</small></span>
               <span className="experiment-pill">FLEX / FLEX-2 <small>gotas y extinción</small></span>
               <span className="experiment-pill">ACME <small>llamas gaseosas</small></span>
+            </div>
+          </section>
+
+          <section className="nasa-resources" id="recursos" aria-labelledby="resources-title">
+            <div className="resources-heading">
+              <div>
+                <div className="section-kicker">TRES RECURSOS NASA · EVIDENCIA TRAZABLE</div>
+                <h2 id="resources-title">La respuesta siempre vuelve a la fuente</h2>
+              </div>
+              <span className="resources-note">PSI + NASA · enlaces oficiales</span>
+            </div>
+            <div className="resource-grid">
+              {nasaResourceLinks.map((resource, index) => (
+                <a className="resource-card" href={resource.href} target="_blank" rel="noreferrer" key={resource.href}>
+                  <span className="resource-number">0{index + 1}</span>
+                  <span className="resource-label">{resource.label}</span>
+                  <strong>{resource.title}</strong>
+                  <p>{resource.description}</p>
+                  <span className="resource-open">Abrir recurso <ExternalLink size={12} /></span>
+                </a>
+              ))}
             </div>
           </section>
 
