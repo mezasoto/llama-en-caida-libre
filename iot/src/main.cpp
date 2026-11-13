@@ -3,7 +3,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 
-#include "secrets.h"
+#include "../secrets.h"
 
 #ifndef IOT_INGEST_TOKEN
 #error "Define IOT_INGEST_TOKEN in iot/secrets.h"
