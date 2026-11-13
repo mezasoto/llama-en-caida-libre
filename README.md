@@ -38,7 +38,7 @@ El frontend actualiza la telemetría cada 10 segundos. `VITE_API_URL` debe apunt
 
 Despliega dos servicios desde este repositorio:
 
-- Backend, tipo **Web Service**, Root Directory `backend`, Build Command `npm install && npm run build`, Start Command `npm start`. Configura `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `IOT_INGEST_TOKEN` y `GROQ_API_KEY` en **Environment**. `GROQ_MODEL` es opcional y usa `llama-3.3-70b-versatile` por defecto. Como alternativa, puedes configurar `GEMINI_API_KEY` y `GEMINI_MODEL`; Groq tiene prioridad si ambas están presentes.
+- Backend, tipo **Web Service**, Root Directory `backend`, Build Command `npm install && npm run build`, Start Command `npm start`. Configura `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `IOT_INGEST_TOKEN` y `GROQ_API_KEY` en **Environment**. `GROQ_MODEL` es opcional y usa `openai/gpt-oss-120b` por defecto. Como alternativa, puedes configurar `GEMINI_API_KEY` y `GEMINI_MODEL`; Groq tiene prioridad si ambas están presentes.
 - Frontend, tipo **Static Site**, Root Directory `frontend`, Build Command `npm install && npm run build`, Publish Directory `dist`. Configura `VITE_API_URL` con la URL pública del backend y vuelve a desplegar el frontend tras cambiarla.
 
 Nunca subas archivos `.env` ni copies la clave secreta de Supabase a Wokwi, al frontend o al repositorio.

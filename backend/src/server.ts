@@ -12,7 +12,7 @@ const ingestToken = process.env.IOT_INGEST_TOKEN;
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const geminiModel = process.env.GEMINI_MODEL ?? "gemini-3.8-flash";
 const groqApiKey = process.env.GROQ_API_KEY;
-const groqModel = process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile";
+const groqModel = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
 const supabase =
   supabaseUrl && supabaseSecretKey
     ? createClient(supabaseUrl, supabaseSecretKey)
@@ -117,6 +117,7 @@ app.get("/api/health", (_req, res) => {
     supabaseConfigured: Boolean(supabase),
     aiConfigured: Boolean(gemini || groqApiKey),
     aiProvider: groqApiKey ? "groq" : gemini ? "gemini" : null,
+    aiModel: groqApiKey ? groqModel : gemini ? geminiModel : null,
   });
 });
 
