@@ -58,6 +58,7 @@ jobs:
 
           if (Test-Path web.config) {
             Copy-Item web.config deploy/web.config
+            Copy-Item run.cjs deploy/run.cjs
           }
 
       - name: Install production dependencies
