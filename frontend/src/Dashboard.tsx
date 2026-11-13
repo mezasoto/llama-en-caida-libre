@@ -175,6 +175,8 @@ function App() {
   const oxygenDescription = oxygenPercent <= 13
     ? 'En el intervalo LOI reportado para metanol en ese estudio.'
     : 'Por encima del intervalo LOI reportado para metanol en ese estudio.'
+  const oxygenRisk = oxygenPercent >= 30 ? 'Prioridad alta' : oxygenPercent >= 25 ? 'Vigilancia' : 'Referencia terrestre'
+  const scenarioLabel = gravityG < 0.1 ? 'Microgravedad' : gravityG > 0.75 ? 'Gravedad terrestre' : 'Gravedad intermedia'
 
   const askAssistant = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -218,6 +220,7 @@ function App() {
         <div className="workspace-label">OBSERVATORIO DE FUEGO</div>
         <nav className="side-nav" aria-label="Navegación principal">
           <a className="nav-item active" href="#simulacion"><Orbit size={17} /> Simulación 3D</a>
+          <a className="nav-item" href="#inteligencia"><BookOpenText size={17} /> Inteligencia de misión</a>
           <a className="nav-item" href="#evidencia"><BookOpenText size={17} /> Evidencia NASA</a>
           <a className="nav-item" href="#telemetria"><Radio size={17} /> Telemetría</a>
           <a className="nav-item" href="#asistente"><Sparkles size={17} /> Asistente IA</a>
@@ -277,6 +280,47 @@ function App() {
               <div className="metric-value metric-demo">{gravityG < 0.1 ? 'DIFUSIVO' : gravityG > 0.75 ? 'CONVECTIVO' : 'TRANSICIÓN'}</div>
               <div className="metric-foot">Gravedad configurada: {gravityG.toFixed(2)} g</div>
             </article>
+          </section>
+
+          <section className="mission-intelligence" id="inteligencia" aria-labelledby="mission-title">
+            <div className="mission-intelligence-heading">
+              <div>
+                <div className="section-kicker">FIREWISE · NASA SPACE APPS 2026</div>
+                <h2 id="mission-title">De resultados experimentales a decisiones de seguridad</h2>
+                <p>Una lectura orientada a misión para priorizar prevención, detección y supresión en hábitats humanos.</p>
+              </div>
+              <a className="mission-source-link" href="https://psi.nasa.gov/physci/repo/search?q=combustion" target="_blank" rel="noreferrer">Abrir PSI <ExternalLink size={13} /></a>
+            </div>
+            <div className="mission-grid">
+              <article className="mission-brief-card mission-brief-primary">
+                <div className="mission-card-label">ESCENARIO ACTIVO</div>
+                <div className="mission-brief-title">Base lunar · {scenarioLabel}</div>
+                <p>La atmósfera de referencia para una superficie lunar puede superar el 30% de oxígeno a una presión menor que la terrestre. El oxígeno aumenta la prioridad de selección de materiales y control de ignición.</p>
+                <div className="mission-fact-row"><span>O₂ configurado</span><strong>{oxygenPercent}%</strong><span className="risk-chip">{oxygenRisk}</span></div>
+              </article>
+              <article className="mission-brief-card">
+                <div className="mission-card-label">MAPA DE SEGURIDAD</div>
+                <div className="safety-map">
+                  <div><span className="safety-index safety-prevent">01</span><strong>Prevención</strong><small>BASS · Saffire · ACME/BRE</small></div>
+                  <div><span className="safety-index safety-detect">02</span><strong>Detección</strong><small>SAME · SAME-R · DAFT</small></div>
+                  <div><span className="safety-index safety-suppress">03</span><strong>Supresión</strong><small>FLEX · FLEX-2 · CFI</small></div>
+                </div>
+              </article>
+              <article className="mission-brief-card mission-gap-card">
+                <div className="mission-card-label">BRECHA DE EVIDENCIA</div>
+                <div className="mission-brief-title">Gravedad parcial lunar</div>
+                <p>El PSI no contiene actualmente datos directos de combustión en gravedad parcial. LUCI y FM2 representan la próxima evidencia crítica para validar escenarios entre microgravedad y 1 g.</p>
+                <span className="gap-status"><span /> Dato futuro prioritario</span>
+              </article>
+            </div>
+            <div className="experiment-strip" aria-label="Relación entre proyectos NASA">
+              <span className="experiment-strip-label">EXPERIMENTOS CONECTADOS</span>
+              <span className="experiment-pill">BASS / BASS-II <small>materiales sólidos</small></span>
+              <span className="experiment-pill">Saffire I–III <small>propagación</small></span>
+              <span className="experiment-pill">SAME-R / DAFT <small>humo y polvo</small></span>
+              <span className="experiment-pill">FLEX / FLEX-2 <small>gotas y extinción</small></span>
+              <span className="experiment-pill">ACME <small>llamas gaseosas</small></span>
+            </div>
           </section>
 
           <section className="panel simulation-panel" id="simulacion">
