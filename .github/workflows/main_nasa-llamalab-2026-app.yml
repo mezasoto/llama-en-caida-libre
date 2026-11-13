@@ -1,53 +1,92 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - nasa-llamalab-2026-app
+name: Deploy NASA LlamaLab to Azure
 
 on:
   push:
     branches:
-      - 'main'
+      - main
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
+    name: Build React and Node.js
     runs-on: windows-latest
-    permissions:
-      contents: read #This is required for actions/checkout
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
         with:
           node-version: '22.x'
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
 
-      - name: npm install, build, and test
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build React frontend
+        working-directory: ./frontend
+        env:
+          VITE_API_URL: ""
+        run: npm run build
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Build Express backend
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Prepare deployment
+        shell: pwsh
         run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
-      
-      - name: Upload artifact for deployment job
+          New-Item -ItemType Directory -Force deploy | Out-Null
+
+          Copy-Item backend/package.json deploy/
+          Copy-Item backend/package-lock.json deploy/
+          Copy-Item backend/dist deploy/dist -Recurse
+          Copy-Item frontend/dist deploy/public -Recurse
+
+          if (Test-Path web.config) {
+            Copy-Item web.config deploy/web.config
+          }
+
+      - name: Install production dependencies
+        working-directory: ./deploy
+        run: npm ci --omit=dev
+
+      - name: Upload deployment artifact
         uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: .
+          name: nasa-llamalab-app
+          path: deploy/
+          if-no-files-found: error
 
   deploy:
+    name: Deploy to Azure App Service
     runs-on: ubuntu-latest
     needs: build
+
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Download deployment artifact
         uses: actions/download-artifact@v4
         with:
-          name: node-app
-      
+          name: nasa-llamalab-app
+          path: .
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -55,11 +94,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_A6A57151342642C7A4DFD8188B399801 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4E886B783EC844EFB51B331BB1A50FE4 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy LlamaLab
         uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
         with:
-          app-name: 'nasa-llamalab-2026-app'
-          slot-name: 'Production'
+          app-name: nasa-llamalab-2026-app
+          slot-name: Production
           package: .
-          
