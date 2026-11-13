@@ -681,22 +681,14 @@ app.use(
 // o una canalización con nombre (named pipe).
 // No debe convertirse siempre con Number().
 
+
 const port = process.env.PORT || "3001";
 
 const server = app.listen(port, () => {
-  console.log(
-    "NASA LlamaLab backend iniciado correctamente.",
-  );
-
-  console.log(
-    "Entorno:",
-    process.env.NODE_ENV ?? "development",
-  );
+  console.log("LlamaLab iniciado correctamente");
 });
 
 server.on("error", (error) => {
-  console.error(
-    "Error al iniciar LlamaLab:",
-    error,
-  );
+  console.error("Error al iniciar LlamaLab:", error);
 });
+
