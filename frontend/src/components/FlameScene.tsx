@@ -5,11 +5,17 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 type FlameSceneProps = {
   gravityG: number
   oxygenPercent: number
+  temperatureC: number
+  airflowMps: number
+  ventilationPercent: number
 }
 
 type SceneParameters = {
   gravityG: number
   oxygenPercent: number
+  temperatureC: number
+  airflowMps: number
+  ventilationPercent: number
 }
 
 const particleCount = 128
@@ -20,12 +26,12 @@ function createParticleGeometry() {
   return geometry
 }
 
-export function FlameScene({ gravityG, oxygenPercent }: FlameSceneProps) {
+export function FlameScene({ gravityG, oxygenPercent, temperatureC, airflowMps, ventilationPercent }: FlameSceneProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const parametersRef = useRef<SceneParameters>({ gravityG, oxygenPercent })
+  const parametersRef = useRef<SceneParameters>({ gravityG, oxygenPercent, temperatureC, airflowMps, ventilationPercent })
   const [unavailable, setUnavailable] = useState(false)
 
-  parametersRef.current = { gravityG, oxygenPercent }
+  parametersRef.current = { gravityG, oxygenPercent, temperatureC, airflowMps, ventilationPercent }
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -146,26 +152,30 @@ export function FlameScene({ gravityG, oxygenPercent }: FlameSceneProps) {
       const current = parametersRef.current
       const g = THREE.MathUtils.clamp(current.gravityG, 0, 1)
       const oxygenFactor = THREE.MathUtils.clamp((current.oxygenPercent - 8) / 22, 0.18, 1)
-      const pulse = 1 + Math.sin(time * 3.2) * 0.025
-      const width = (0.88 - g * 0.3) * (0.88 + oxygenFactor * 0.12) * pulse
-      const height = (0.82 + g * 0.9) * (0.88 + oxygenFactor * 0.12) * pulse
+      const temperatureFactor = THREE.MathUtils.clamp((current.temperatureC - 10) / 35, 0.12, 1)
+      const airflowFactor = THREE.MathUtils.clamp(current.airflowMps / 1.2, 0, 1)
+      const ventilationFactor = THREE.MathUtils.clamp(current.ventilationPercent / 100, 0, 1)
+      const mixingFactor = airflowFactor * 0.55 + ventilationFactor * 0.25
+      const pulse = 1 + Math.sin(time * (2.4 + airflowFactor * 2.2)) * (0.018 + mixingFactor * 0.035)
+      const width = (0.88 - g * 0.3 + mixingFactor * 0.18) * (0.82 + oxygenFactor * 0.14) * pulse
+      const height = (0.82 + g * 0.9 + temperatureFactor * 0.12) * (0.88 + oxygenFactor * 0.12) * pulse
 
       outerFlame.scale.set(width * 1.12, height * 1.05, width * 1.12)
       innerFlame.scale.set(width * 0.68, height * 0.65, width * 0.68)
       outerFlame.position.y = -0.05 + g * 0.2
       innerFlame.position.copy(outerFlame.position)
-      outerFlameMaterial.opacity = 0.18 + oxygenFactor * 0.22
-      innerFlameMaterial.opacity = 0.34 + oxygenFactor * 0.42
-      keyLight.intensity = 8 + oxygenFactor * 14
+      outerFlameMaterial.opacity = 0.16 + oxygenFactor * 0.2 + ventilationFactor * 0.06
+      innerFlameMaterial.opacity = 0.3 + oxygenFactor * 0.4 + temperatureFactor * 0.05
+      keyLight.intensity = 7 + oxygenFactor * 12 + temperatureFactor * 4
       chamber.rotation.y = Math.sin(time * 0.22) * 0.035
 
       const positions = particleGeometry.attributes.position as THREE.BufferAttribute
       for (let index = 0; index < particleCount; index += 1) {
         const progress = (time * 0.12 + index / particleCount) % 1
         const angle = index * 2.399963229728653
-        const radius = 0.24 + progress * (0.38 + (1 - g) * 0.72)
-        const rise = progress * (0.2 + g * 1.42)
-        const oscillation = Math.sin(time * 1.7 + angle) * (0.07 + (1 - g) * 0.13)
+        const radius = 0.24 + progress * (0.38 + (1 - g) * 0.72 + mixingFactor * 0.35)
+        const rise = progress * (0.2 + g * 1.42 + airflowFactor * 0.18)
+        const oscillation = Math.sin(time * 1.7 + angle) * (0.07 + (1 - g) * 0.13 + airflowFactor * 0.05)
         positions.setXYZ(
           index,
           Math.cos(angle) * radius * (1 - g * 0.35),

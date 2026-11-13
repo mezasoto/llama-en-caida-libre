@@ -1434,6 +1434,32 @@ tbody tr:nth-child(3) .type-label {
   font-size: 8px;
 }
 
+.compact-control {
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid #e8ece6;
+}
+
+.simulation-chart {
+  height: 122px;
+  margin-top: 15px;
+  padding-top: 9px;
+  border-top: 1px solid #e8ece6;
+}
+
+.simulation-chart-heading {
+  display: flex;
+  justify-content: space-between;
+  color: #8a948a;
+  font-family: var(--mono);
+  font-size: 7px;
+  letter-spacing: .35px;
+}
+
+.simulation-chart-heading span:last-child {
+  color: #bd7857;
+}
+
 @media (max-width: 760px) {
   .resources-heading { align-items: start; flex-direction: column; }
   .resource-grid { grid-template-columns: 1fr; }

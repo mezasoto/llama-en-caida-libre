@@ -108,6 +108,9 @@ function App() {
   const [telemetryStatus, setTelemetryStatus] = useState<TelemetryStatus>('loading')
   const [gravityG, setGravityG] = useState(0.01)
   const [oxygenPercent, setOxygenPercent] = useState(21)
+  const [temperatureC, setTemperatureC] = useState(22)
+  const [airflowMps, setAirflowMps] = useState(0.2)
+  const [ventilationPercent, setVentilationPercent] = useState(40)
   const [sourceQuery, setSourceQuery] = useState('')
   const [nasaReferences, setNasaReferences] = useState(initialNasaReferences)
   const [nasaSearchStatus, setNasaSearchStatus] = useState<NasaSearchStatus>('loading')
@@ -187,6 +190,17 @@ function App() {
   )
 
   const latestReading = telemetry[0]
+  const combustionSeries = useMemo(() => Array.from({ length: 28 }, (_, index) => {
+    const phase = index / 27
+    const mixing = Math.min(1, airflowMps / 1.2) * 0.45 + ventilationPercent / 100 * 0.2
+    const thermal = Math.min(1, Math.max(0, (temperatureC - 10) / 35))
+    const oxidizer = Math.min(1, Math.max(0, (oxygenPercent - 12) / 18))
+    const stability = Math.max(0.05, 1 - gravityG * 0.35)
+    const oscillation = Math.sin(index * 0.7 + airflowMps * 2) * (0.025 + mixing * 0.04)
+    const intensity = Math.min(1, Math.max(0, 0.28 + oxidizer * 0.38 + thermal * 0.18 + mixing * 0.12 + oscillation))
+    const transport = Math.min(1, Math.max(0, 0.18 + gravityG * 0.52 + airflowMps * 0.2 + phase * 0.04))
+    return { time: `${index * 2}s`, intensidad: Number((intensity * 100).toFixed(1)), transporte: Number((transport * stability * 100).toFixed(1)) }
+  }), [airflowMps, gravityG, oxygenPercent, temperatureC, ventilationPercent])
   const gravityDescription = gravityG < 0.1
     ? 'La flotabilidad casi desaparece; el transporte alrededor de la gota se representa como difusión radial.'
     : gravityG > 0.75
@@ -376,7 +390,7 @@ function App() {
             <div className="simulation-grid">
               <div className="flame-viewport">
                 <Suspense fallback={<div className="flame-scene-fallback">Cargando escena 3D…</div>}>
-                  <FlameScene gravityG={gravityG} oxygenPercent={oxygenPercent} />
+                  <FlameScene gravityG={gravityG} oxygenPercent={oxygenPercent} temperatureC={temperatureC} airflowMps={airflowMps} ventilationPercent={ventilationPercent} />
                 </Suspense>
                 <div className="scene-readout scene-readout-top"><span className="scene-readout-dot" /> CÁMARA DE COMBUSTIÓN</div>
                 <div className="scene-readout scene-readout-bottom"><span>G = {gravityG.toFixed(2)} g</span><span>O₂ = {oxygenPercent}%</span><span>{gravityG < 0.1 ? 'DIFUSIÓN RADIAL' : 'EMPUJE ASCENDENTE'}</span></div>
@@ -403,6 +417,34 @@ function App() {
                   </div>
                   <div className="range-ends oxygen-ends"><span>12% · LOI</span><span>30% · ensayo</span></div>
                   <p className="control-context">{oxygenDescription}</p>
+                </div>
+                <div className="control-block compact-control">
+                  <div className="control-label-row"><label htmlFor="temperature-range">Temperatura</label><output htmlFor="temperature-range">{temperatureC} °C</output></div>
+                  <input id="temperature-range" className="science-range temperature-range" type="range" min="10" max="45" step="1" value={temperatureC} onChange={(event) => setTemperatureC(Number(event.target.value))} />
+                  <div className="range-ends"><span>10 °C</span><span>45 °C</span></div>
+                </div>
+                <div className="control-block compact-control">
+                  <div className="control-label-row"><label htmlFor="airflow-range">Flujo de aire</label><output htmlFor="airflow-range">{airflowMps.toFixed(2)} m/s</output></div>
+                  <input id="airflow-range" className="science-range airflow-range" type="range" min="0" max="1.2" step="0.05" value={airflowMps} onChange={(event) => setAirflowMps(Number(event.target.value))} />
+                  <div className="range-ends"><span>Difusión</span><span>1.2 m/s</span></div>
+                </div>
+                <div className="control-block compact-control">
+                  <div className="control-label-row"><label htmlFor="ventilation-range">Ventilación</label><output htmlFor="ventilation-range">{ventilationPercent}%</output></div>
+                  <input id="ventilation-range" className="science-range ventilation-range" type="range" min="0" max="100" step="5" value={ventilationPercent} onChange={(event) => setVentilationPercent(Number(event.target.value))} />
+                  <div className="range-ends"><span>Cerrada</span><span>Abierta</span></div>
+                </div>
+                <div className="simulation-chart">
+                  <div className="simulation-chart-heading"><span>RESPUESTA DEL MODELO · 56 s</span><span>cualitativo</span></div>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={combustionSeries} margin={{ top: 6, right: 2, left: -27, bottom: 0 }}>
+                      <CartesianGrid vertical={false} stroke="#dfe6df" strokeDasharray="3 4" />
+                      <XAxis dataKey="time" hide />
+                      <YAxis domain={[0, 100]} tick={{ fill: '#879287', fontSize: 7 }} axisLine={false} tickLine={false} width={28} />
+                      <Tooltip contentStyle={{ border: '1px solid #dfe5dd', borderRadius: 4, fontSize: 9 }} />
+                      <Line type="monotone" dataKey="intensidad" name="Intensidad relativa" stroke="#dc754e" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="transporte" name="Transporte" stroke="#4f98a1" strokeWidth={1.5} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
                 <div className="transport-note">
                   {gravityG < 0.1 ? <Orbit size={16} /> : <ArrowUpRight size={16} />}
