@@ -340,7 +340,8 @@ app.post("/api/insights", insightLimiter, async (req, res) => {
       "Could not generate scientific insight:",
       error instanceof Error ? error.message : "Unknown Gemini error",
     );
-    res.status(502).json({ error: "No se pudo generar el análisis IA en este momento." });
+    const provider = groqApiKey ? "Groq" : "Gemini";
+    res.status(502).json({ error: `No se pudo generar el análisis IA con ${provider}. Revisa la clave, el modelo y los logs del Web Service.` });
   }
 });
 
