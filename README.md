@@ -2,6 +2,12 @@
 
 Dashboard interactivo para explorar seguridad contra incendios en microgravedad. Las referencias NASA se consultan en NASA NTRS; la telemetría del ESP32/Wokwi se consulta desde Supabase a través del backend.
 
+## Azure y estado de integraciones
+
+La aplicación completa está en `/` y el dashboard en `/dashboard`. Azure sirve React y `/api` desde el mismo origen; deja `VITE_API_URL` vacío para la compilación de producción. Consulta [la configuración exacta de integraciones](docs/integrations.md). `GET /api/health` informa presencia de configuración, no verifica credenciales ni conectividad externa.
+
+Las integraciones sin credenciales devuelven 503; no se generan lecturas ni respuestas IA de sustitución. La escena 3D es un modelo conceptual y los registros DEMO del dashboard son ejemplos identificados como tales.
+
 ## Supabase
 
 En el proyecto de Supabase abre **SQL Editor → New query** y ejecuta [`supabase/migrations/20261022000000_create_telemetry.sql`](supabase/migrations/20261022000000_create_telemetry.sql). La tabla activa RLS; las lecturas se escriben desde el backend usando una clave secreta que no debe incluirse en el frontend ni en el firmware.
@@ -45,13 +51,17 @@ Nunca subas archivos `.env` ni copies la clave secreta de Supabase a Wokwi, al f
 
 ## Simulador Wokwi (ESP32)
 
-El proyecto de firmware está en `iot/`. Sus potenciómetros y botón generan **entradas ilustrativas**, no mediciones de sensores físicos. Cada 10 segundos el ESP32 simulado envía una lectura por HTTPS a Render; el backend la valida y la guarda en Supabase.
+El proyecto de firmware está en `iot/`. Sus potenciómetros y botón generan **entradas ilustrativas**, no mediciones de sensores físicos. Cada 10 segundos el ESP32 simulado envía una lectura por HTTPS a Azure; el backend la valida y la guarda en Supabase.
 
 1. Instala la extensión **PlatformIO IDE** en VS Code si todavía no está instalada.
 2. En una ventana de VS Code, abre la carpeta `iot` como proyecto.
-3. Copia `secrets.example.h` a `secrets.h` y reemplaza el texto de ejemplo por el mismo `IOT_INGEST_TOKEN` configurado en Render. `iot/secrets.h` está ignorado por Git.
+3. Copia `secrets.example.h` a `secrets.h` y reemplaza el texto de ejemplo por el mismo `IOT_INGEST_TOKEN` configurado en Azure. `iot/secrets.h` está ignorado por Git.
 4. Compila el entorno `esp32dev` desde PlatformIO (`PlatformIO: Build` o `pio run`). Wokwi necesita el firmware compilado antes de iniciar.
 5. Ejecuta **Wokwi: Start Simulator** desde la paleta de comandos. La extensión usa `diagram.json` y `wokwi.toml` de la carpeta `iot`.
 6. Mueve el potenciómetro de temperatura o humo y presiona el botón rojo para simular una llama. El monitor serial muestra el código HTTP; `201` indica que la lectura se guardó. Revisa `/api/telemetry` o la tabla `public.telemetry` en Supabase.
 
 El ejemplo usa `setInsecure()` para simplificar HTTPS durante la simulación. No uses esta configuración en hardware real sin reemplazarla por validación del certificado TLS. El token se incluye en el firmware, así que usa este ejemplo solo con el token de demostración y no publiques `secrets.h`.
+
+## Pruebas de integración
+
+`cd backend && npm ci && npm test` compila Express y ejecuta contratos HTTP con respuestas externas de prueba aisladas. No verifica servicios reales ni inyecta datos de prueba en producción. Los tests se ejecutan en CI antes de empaquetar.

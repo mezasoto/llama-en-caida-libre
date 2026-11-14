@@ -9,11 +9,14 @@
 #error "Define IOT_INGEST_TOKEN in iot/secrets.h"
 #endif
 
+#ifndef IOT_API_URL
+#define IOT_API_URL "https://nasa-llamalab-2026-app-dccwa9gqg7eqhmgp.brazilsouth-01.azurewebsites.net/api/telemetry"
+#endif
+
 namespace {
 
 constexpr char kWifiSsid[] = "Wokwi-GUEST";
-constexpr char kApiUrl[] =
-    "https://llama-en-caida-libre-api.onrender.com/api/telemetry";
+constexpr char kApiUrl[] = IOT_API_URL;
 constexpr char kDeviceId[] = "esp32-wokwi-demo";
 constexpr uint8_t kTemperaturePotPin = 34;
 constexpr uint8_t kSmokePotPin = 35;
