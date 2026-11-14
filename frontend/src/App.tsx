@@ -255,6 +255,7 @@ function App() {
         </a>
         <div className="workspace-label">OBSERVATORIO DE FUEGO</div>
         <nav className="side-nav" aria-label="Navegación principal">
+          <a className="nav-item" href="/dashboard"><Gauge size={17} /> Dashboard</a>
           <a className="nav-item active" href="#simulacion"><Orbit size={17} /> Simulación 3D</a>
           <a className="nav-item" href="#inteligencia"><BookOpenText size={17} /> Inteligencia de misión</a>
           <a className="nav-item" href="#evidencia"><BookOpenText size={17} /> Evidencia NASA</a>
