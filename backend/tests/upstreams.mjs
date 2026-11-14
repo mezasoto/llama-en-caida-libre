@@ -25,6 +25,8 @@ globalThis.fetch = async (input, options = {}) => {
     assert.ok(options.signal, 'AI request must have a timeout');
     const payload = JSON.parse(options.body);
     const context = JSON.parse(payload.messages[1].content);
+    if (context.question.includes('auth-error')) return Response.json({ error: { message: 'test-only-not-a-real-key' } }, { status: 401 });
+    if (context.question.includes('quota-error')) return Response.json({ error: { message: 'test quota' } }, { status: 429, headers: { 'Retry-After': '17' } });
     if (context.question.includes('upstream-error')) return Response.json({ error: { message: 'test provider unavailable' } }, { status: 503 });
     assert.equal(context.scenario.temperature_c, 30);
     assert.equal(context.scenario.airflow_mps, 0.5);

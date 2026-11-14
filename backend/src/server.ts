@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import { GoogleGenAI } from "@google/genai";
 import { rateLimit } from "express-rate-limit";
+import { generateGroqAnswer, GroqError } from "./groq.js";
 
 const app = express();
 
@@ -514,53 +515,7 @@ app.post(
 
       // Prioridad: Groq si existe GROQ_API_KEY.
       if (groqApiKey) {
-        const response = await fetch(
-          "https://api.groq.com/openai/v1/chat/completions",
-          {
-            method: "POST",
-            signal: AbortSignal.timeout(25000),
-            headers: {
-              Authorization: `Bearer ${groqApiKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              model: groqModel,
-              temperature: 0.2,
-              max_tokens: 500,
-              messages: [
-                {
-                  role: "system",
-                  content: systemInstruction,
-                },
-                {
-                  role: "user",
-                  content: context,
-                },
-              ],
-            }),
-          },
-        );
-
-        const payload = (await response.json()) as {
-          choices?: Array<{
-            message?: {
-              content?: string;
-            };
-          }>;
-          error?: {
-            message?: string;
-          };
-        };
-
-        if (!response.ok) {
-          throw new Error(
-            payload.error?.message ||
-              `Groq HTTP ${response.status}`,
-          );
-        }
-
-        answer =
-          payload.choices?.[0]?.message?.content?.trim();
+        answer = await generateGroqAnswer(groqApiKey, groqModel, systemInstruction, context);
       } else if (gemini) {
         const response =
           await gemini.interactions.create({
@@ -593,12 +548,14 @@ app.post(
         modelIsQualitative: true,
       });
     } catch (error) {
-      console.error(
-        "Could not generate scientific insight:",
-        error instanceof Error
-          ? error.message
-          : "Unknown AI error",
-      );
+      if (error instanceof GroqError) {
+        console.error("AI request failed:", "groq", error.code);
+        if (error.retryAfter) res.setHeader("Retry-After", error.retryAfter);
+        res.status(error.status).json({ error: error.message, code: error.code });
+        return;
+      }
+      // SDK errors can contain credentials or request details; log only a fixed code.
+      console.error("AI request failed:", "gemini", "AI_PROVIDER_ERROR");
 
       const provider = groqApiKey
         ? "Groq"

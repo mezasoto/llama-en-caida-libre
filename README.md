@@ -4,6 +4,8 @@ Dashboard interactivo para explorar seguridad contra incendios en microgravedad.
 
 ## Azure y estado de integraciones
 
+Para activar el proveedor sin exponer la clave, consulta [Groq en Azure](docs/groq-activation.md).
+
 La aplicación completa está en `/` y el dashboard en `/dashboard`. Azure sirve React y `/api` desde el mismo origen; deja `VITE_API_URL` vacío para la compilación de producción. Consulta [la configuración exacta de integraciones](docs/integrations.md). `GET /api/health` informa presencia de configuración, no verifica credenciales ni conectividad externa.
 
 Las integraciones sin credenciales devuelven 503; no se generan lecturas ni respuestas IA de sustitución. La escena 3D es un modelo conceptual y los registros DEMO del dashboard son ejemplos identificados como tales.
