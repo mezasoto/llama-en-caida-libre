@@ -148,6 +148,7 @@ function App() {
 
         <div className="workspace-label">ESPACIO DE TRABAJO</div>
         <nav className="side-nav" aria-label="Navegación principal">
+          <a className="nav-item" href="/"><Flame size={17} /> Simulación 3D, NASA e IA</a>
           <a className="nav-item active" href="#panel"><Activity size={17} /> Panel de análisis</a>
           <a className="nav-item" href="#experimentos"><FlaskConical size={17} /> Experimentos</a>
           <a className="nav-item" href="#telemetria"><Radio size={17} /> Telemetría <span className="nav-soon">DEMO</span></a>
