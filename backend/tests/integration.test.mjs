@@ -17,7 +17,7 @@ async function start(configured) {
   const stop = async () => { if (child.exitCode === null) { child.kill(); await new Promise(resolve => child.once('exit', resolve)); } };
   for (let i = 0; i < 60; i++) {
     if (child.exitCode !== null) throw new Error(logs);
-    if (logs.includes('LlamaLab iniciado correctamente')) return stop;
+    if (logs.includes('LlamaLab iniciado correctamente')) return Object.assign(stop, { logs: () => logs });
     await delay(100);
   }
   await stop(); throw new Error(`Startup timeout: ${logs}`);
@@ -52,7 +52,16 @@ test('Express contracts with isolated upstream fixtures, not live services', asy
       assert.equal(r.status, 200); const data = await r.json(); assert.match(data.answer, /Test fixture answer/); assert.equal(data.sources.length, 2); assert.equal(data.modelIsQualitative, true);
     });
     await t.test('AI reports provider errors', async () => { assert.equal((await request('/api/insights', { ...scenario, question: 'microgravity upstream-error' })).status, 502); });
-    for (const [key, value] of [['temperatureC', 46], ['airflowMps', -1], ['ventilationPercent', 101], ['oxygenPercent', '21']]) {
+    await t.test('AI authentication failure is actionable and does not expose provider text', async () => {
+      const r = await request('/api/insights', { ...scenario, question: 'microgravity auth-error' });
+      assert.equal(r.status, 503);
+      const body = await r.text(); assert.ok(body.includes('AI_AUTH_ERROR')); assert.ok(!body.includes('test-only-not-a-real-key'));
+    });
+    await t.test('AI quota failure carries a safe retry interval', async () => {
+      const r = await request('/api/insights', { ...scenario, question: 'microgravity quota-error' });
+      assert.equal(r.status, 503); assert.equal(r.headers.get('retry-after'), '17'); assert.equal((await r.json()).code, 'AI_RATE_LIMITED');
+    });
+    for (const [key, value] of [['gravityG', 0], ['temperatureC', 46], ['airflowMps', -1], ['ventilationPercent', 101], ['oxygenPercent', '21']]) {
       await t.test(`AI rejects invalid ${key}`, async () => { assert.equal((await request('/api/insights', { ...scenario, [key]: value })).status, 400); });
     }
     await t.test('AI rejects off-topic questions', async () => { assert.equal((await request('/api/insights', { ...scenario, question: 'receta de pastel' })).status, 422); });
@@ -61,7 +70,7 @@ test('Express contracts with isolated upstream fixtures, not live services', asy
       assert.equal(r.status, 400); assert.match((await r.json()).error, /JSON/);
     });
     await t.test('oversized JSON returns 413', async () => { assert.equal((await request('/api/insights', { text: 'x'.repeat(110000) })).status, 413); });
-  } finally { await stop(); }
+  } finally { await stop(); assert.ok(!stop.logs().includes('test-only-not-a-real-key'), 'Provider credentials must not appear in server logs'); }
   const stopUnconfigured = await start(false);
   try {
     await t.test('missing credentials remain explicitly unavailable', async () => {
@@ -71,4 +80,11 @@ test('Express contracts with isolated upstream fixtures, not live services', asy
       assert.equal((await request('/api/insights', scenario)).status, 503);
     });
   } finally { await stopUnconfigured(); }
+  const stopLimited = await start(true);
+  try {
+    await t.test('local AI limiter rejects request 21 without calling a provider', async () => {
+      for (let i = 0; i < 20; i++) assert.equal((await request('/api/insights', { ...scenario, question: 'receta de pastel' })).status, 422);
+      const r = await request('/api/insights', scenario); assert.equal(r.status, 429); assert.ok(r.headers.get('retry-after'));
+    });
+  } finally { await stopLimited(); }
 });
