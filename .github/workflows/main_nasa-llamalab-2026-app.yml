@@ -49,6 +49,10 @@ jobs:
         working-directory: ./backend
         run: npm run build
 
+      - name: Test backend integration contracts
+        working-directory: ./backend
+        run: node --test tests/*.test.mjs
+
       - name: Prepare deployment
         shell: pwsh
         run: ./scripts/prepare-deploy.ps1

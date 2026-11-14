@@ -36,7 +36,7 @@ const supabase =
     : null;
 
 const gemini = geminiApiKey
-  ? new GoogleGenAI({ apiKey: geminiApiKey })
+  ? new GoogleGenAI({ apiKey: geminiApiKey, httpOptions: { timeout: 25000 } })
   : null;
 
 // =====================================================
@@ -402,6 +402,9 @@ app.post(
       question,
       gravityG,
       oxygenPercent,
+      temperatureC = 22,
+      airflowMps = 0.2,
+      ventilationPercent = 40,
     } = req.body ?? {};
 
     if (
@@ -415,11 +418,14 @@ app.post(
       typeof oxygenPercent !== "number" ||
       !Number.isFinite(oxygenPercent) ||
       oxygenPercent < 12 ||
-      oxygenPercent > 30
+      oxygenPercent > 30 ||
+      typeof temperatureC !== "number" || !Number.isFinite(temperatureC) || temperatureC < 10 || temperatureC > 45 ||
+      typeof airflowMps !== "number" || !Number.isFinite(airflowMps) || airflowMps < 0 || airflowMps > 1.2 ||
+      typeof ventilationPercent !== "number" || !Number.isFinite(ventilationPercent) || ventilationPercent < 0 || ventilationPercent > 100
     ) {
       res.status(400).json({
         error:
-          "Incluye una pregunta breve, gravedad entre 0.01 y 1 g y oxígeno entre 12 y 30 %.",
+          "Incluye una pregunta breve, gravedad entre 0.01 y 1 g y oxígeno entre 12 y 30 %, temperatura entre 10 y 45 °C, flujo entre 0 y 1.2 m/s y ventilación entre 0 y 100 %.",
       });
       return;
     }
@@ -474,6 +480,9 @@ app.post(
       scenario: {
         gravity_g: gravityG,
         oxygen_percent: oxygenPercent,
+        temperature_c: temperatureC,
+        airflow_mps: airflowMps,
+        ventilation_percent: ventilationPercent,
       },
 
       nasaSources: [
@@ -509,6 +518,7 @@ app.post(
           "https://api.groq.com/openai/v1/chat/completions",
           {
             method: "POST",
+            signal: AbortSignal.timeout(25000),
             headers: {
               Authorization: `Bearer ${groqApiKey}`,
               "Content-Type": "application/json",
@@ -661,6 +671,12 @@ app.use(
     res: express.Response,
     _next: express.NextFunction,
   ) => {
+    const status = (error as { status?: number })?.status;
+    if (status === 400 || status === 413) {
+      res.status(status).json({ error: status === 413 ? "El cuerpo de la solicitud es demasiado grande." : "El cuerpo JSON no es válido." });
+      return;
+    }
+
     console.error(
       "LlamaLab server error:",
       error,

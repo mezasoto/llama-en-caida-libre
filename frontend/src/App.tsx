@@ -230,7 +230,9 @@ function App() {
           question: question.trim(),
           gravityG,
           oxygenPercent,
-          telemetry: telemetry.slice(0, 5),
+          temperatureC,
+          airflowMps,
+          ventilationPercent,
         }),
       })
       const result = (await response.json()) as { answer?: string; sources?: string[]; error?: string }
@@ -288,7 +290,7 @@ function App() {
               <h1>Cuando la llama <em>pierde arriba</em></h1>
               <p>Explora cómo gravedad y oxígeno cambian el transporte de calor y materia alrededor de una gota.</p>
             </div>
-            <div className="live-status"><span className={`pulse-dot pulse-${telemetryStatus}`} />{telemetryStatus === 'online' ? `${telemetry.length} lecturas Wokwi` : telemetryStatus === 'empty' ? 'Wokwi conectado · sin lecturas' : telemetryStatus === 'loading' ? 'Conectando telemetría' : 'Telemetría sin conexión'}</div>
+            <div className="live-status"><span className={`pulse-dot pulse-${telemetryStatus}`} />{telemetryStatus === 'online' ? `${telemetry.length} lecturas Wokwi` : telemetryStatus === 'empty' ? 'API conectada · sin lecturas' : telemetryStatus === 'loading' ? 'Conectando telemetría' : 'Telemetría sin conexión'}</div>
           </section>
 
           <div className="truth-banner" role="note">
@@ -478,7 +480,7 @@ function App() {
             <article className="panel telemetry-analysis" id="telemetria">
               <div className="panel-heading">
                 <div><div className="section-kicker">DATOS DE SIMULADOR · NO NASA</div><h2>Telemetría ESP32 reciente</h2></div>
-                <span className={`connection-tag connection-${telemetryStatus}`}><span />{telemetryStatus === 'online' ? 'En vivo' : telemetryStatus === 'empty' ? 'Sin datos' : telemetryStatus === 'loading' ? 'Conectando' : 'Offline'}</span>
+                <span className={`connection-tag connection-${telemetryStatus}`}><span />{telemetryStatus === 'online' ? 'API conectada' : telemetryStatus === 'empty' ? 'Sin datos' : telemetryStatus === 'loading' ? 'Conectando' : 'Offline'}</span>
               </div>
               {telemetryChartData.length ? (
                 <div className="telemetry-chart-wrap">
@@ -536,7 +538,7 @@ function App() {
             </form>
               {answer && <div className="assistant-answer" aria-live="polite"><Sparkles size={15} /><div><p>{answer.text}</p>{answer.sources.length > 0 && <div className="assistant-citations">Fuentes: {answer.sources.map((source) => <a href={source} target="_blank" rel="noreferrer" key={source}>NASA NTRS <ExternalLink size={11} /></a>)}</div>}</div></div>}
             {assistantError && <div className="assistant-error" role="status"><CircleAlert size={15} /><span>{assistantError}{assistantError.toLowerCase().includes('no está configurado') ? ' Revisa GROQ_API_KEY o GEMINI_API_KEY en las variables de entorno de Azure App Service.' : ' Revisa los registros de Azure App Service y las variables de IA configuradas.'}</span></div>}
-            <div className="assistant-scope">La IA recibe gravedad, oxígeno, lecturas simuladas recientes y los dos informes citados. No emite recomendaciones operativas ni sustituye validación de ingeniería.</div>
+            <div className="assistant-scope">La IA recibe gravedad, oxígeno, temperatura, flujo, ventilación, lecturas recientes del servidor y los dos informes citados. No emite recomendaciones operativas ni sustituye validación de ingeniería.</div>
           </section>
 
           <footer className="page-footer"><span>LLAMALAB <i>·</i> INVESTIGACIÓN ESPACIAL</span><span>Modelo 3D conceptual <i>·</i> Wokwi no son datos NASA</span></footer>
